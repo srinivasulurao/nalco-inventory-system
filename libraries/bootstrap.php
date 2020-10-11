@@ -6,8 +6,7 @@ try{
     $query_string=$_REQUEST['url'];
     $exploder=explode("/",$query_string); 
 
-    $classAlias=array("user"=>"Users","system"=>"InventorySystem","Users"=>"Users",""=>"Users");
-    $methodAlias=array("add-inventory"=>"add_inventory");
+    $classAlias=array("user"=>"Users","system"=>"InventorySystem","Users"=>"Users",""=>"Users"); 
     $requested_controller=$classAlias[$exploder[0]];
     $requested_method=($exploder[1])?str_replace("-","_",$exploder[1]):'index';
 

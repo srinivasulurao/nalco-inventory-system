@@ -164,7 +164,7 @@ class InventoryDealer{
             return $return_data;
         }
     }
-
+  
     public function insertInventoryDetails(){
         $return_data=array();
         if(isset($_POST['inventory_sub'])){
@@ -193,7 +193,7 @@ class InventoryDealer{
     }
 
 
-    public function setUpPagination($record_size){
+    public function setUpPagination($record_size,$next_page_no=0){
         
         $data=array(); 
         if($_REQUEST['page']==null || $_REQUEST['page']==0){
@@ -437,6 +437,193 @@ class InventoryDealer{
         return $return_data;
     }
 
+    function getAllEmployees(){
+        $return_data=array();
+        $query=$this->db->query("SELECT * FROM employees",$this->db->con);
+        while($rec=$query->fetch_object()){
+            $return_data[]=$rec;
+        }
+        return $return_data; 
+    }
+
+    public function addEmployeeDetails(){
+        $return_data=array();
+        if(isset($_POST['add_employee_sub'])){
+            $insert=array();
+            foreach($_POST as $key=>$value):
+                $insert[$key]=$this->db->real_escape_string($value);  
+            endforeach; 
+            $emp_dop=date("Y-m-d", strtotime($insert['emp_dop']));
+            $emp_dob=date("Y-m-d", strtotime($insert['emp_dob'])); 
+            $sql="INSERT INTO employees SET emp_name='{$insert['emp_name']}', emp_designation='{$insert['emp_designation']}', emp_dop='$emp_dop', emp_dob='$emp_dob', emp_blood_grp='{$insert['emp_blood_grp']}', emp_phone='{$insert['emp_phone']}', emp_mail='{$insert['emp_mail']}'";
+            $added=$this->db->query($sql);
+            if($added=== TRUE){
+                $return_data['page_message']="Employee Details Deleted Successfully !";
+                $return_data['page_message_type']="alert alert-success";
+            }
+            else{
+                $return_data['page_message']=$this->db->error;
+                $return_data['page_message_type']="alert alert-danger"; 
+
+            }
+        }
+        return $return_data;
+    }
+
+    public function deleteEmployeeDetails(){
+        $return_data=array();
+        if(isset($_POST['delete_employee_sub'])){
+              $delete=$this->db->query("DELETE FROM employees WHERE emp_id='{$_POST['delete_employee_id']}'");
+              if($delete=== TRUE){
+                $return_data['page_message']="Employee Details Deleted Successfully !";
+                $return_data['page_message_type']="alert alert-success";
+              }
+              else{
+                    $return_data['page_message']=$this->db->error;
+                    $return_data['page_message_type']="alert alert-danger"; 
+
+                }
+        }
+        return $return_data;
+    }
+
+    public function updateEmployeeDetails(){
+        $return_data=array();
+        if(isset($_POST['update_employee_sub'])){
+            $update=array();
+            foreach($_POST as $key=>$val){
+                $update[$key]=$this->db->real_escape_string($val);
+            }
+            $emp_dop=date("Y-m-d", strtotime($update['emp_dop']));
+            $emp_dob=date("Y-m-d", strtotime($update['emp_dob'])); 
+            $sql="UPDATE employees SET emp_name='{$update['emp_name']}', emp_designation='{$update['emp_designation']}', emp_dop='$emp_dop', emp_dob='$emp_dob', emp_blood_grp='{$update['emp_blood_grp']}', emp_phone='{$update['emp_phone']}', emp_mail='{$update['emp_mail']}' WHERE emp_id='{$update['emp_id']}'";
+            $update=$this->db->query($sql); 
+            if($update=== TRUE){
+                $return_data['page_message']="Employee Details Updated Successfully !";
+                $return_data['page_message_type']="alert alert-success";
+            }
+            else{
+                    $return_data['page_message']=$this->db->error;
+                    $return_data['page_message_type']="alert alert-danger"; 
+
+            }
+        }
+
+        return $return_data;
+    }
+
+    public function checkShiftLogAvailability($emp_id,$shift,$log_date){
+        $return_data=array();
+        $log_date=date("Y-m-d",strtotime($log_date));
+        $sql="SELECT shift_logs.*,employees.emp_name FROM shift_logs LEFT JOIN employees ON shift_logs.emp_id=employees.emp_id WHERE shift_logs.log_date='{$log_date}' AND shift_logs.emp_id='$emp_id' AND shift_logs.shift='$shift'";
+        $result=$this->db->query($sql);
+        if($result->num_rows){
+            $return_data['count']=1;
+            $return_data['data']=$result->fetch_object();
+        }
+        else{
+            $return_data['count']=0;
+            $return_data['data']=0;
+        }
+        return $return_data;
+    }
+
+    public function deleteShiftLog(){
+        $return_data=array();
+        if(isset($_POST['delete_shiftlog_sub'])){
+            $delete=$this->db->query("DELETE FROM shift_logs WHERE shift_log_id='{$_POST['delete_shiftlog_id']}'");
+            $delete_log_records=$this->db->query("DELETE FROM shift_log_particulars WHERE shift_log_id='{$_POST['delete_shiftlog_id']}'"); 
+            if($delete=== TRUE && $delete_log_records === TRUE){
+              $return_data['page_message']="Employee Shift Log Deleted Successfully !";
+              $return_data['page_message_type']="alert alert-success";
+            }
+            else{
+                  $return_data['page_message']=$this->db->error;
+                  $return_data['page_message_type']="alert alert-danger"; 
+
+              }
+        }
+        return $return_data;
+    }
+
+    public function getShiftLogParticulars($shift_log_id){
+        $return_data=array();
+        $sql="SELECT * FROM shift_log_particulars WHERE shift_log_id='$shift_log_id'";
+        $results=$this->db->query($sql);
+        while($rec=$results->fetch_object()){
+            $return_data[]=$rec;
+        }
+        //debug($return_data); 
+        return $return_data;
+    }
+
+    public function addShiftLogParticulars(){
+        // debug($_POST); 
+        $return_data=array();
+        if(isset($_POST['save_shift_log_particulars'])):
+            $shift_log_id=$_POST['shift_log_id']; 
+            $row_count=sizeof($_POST['log_particular_id']);
+            for($i=0;$i<$row_count;$i++){
+               $log_particular_id=$_POST['log_particular_id'][$i];
+               $equipment_affected=$_POST['equipment_affected'][$i];
+               $nature_job_defect=$_POST['nature_job_defect'][$i];
+               $reporting_time=date("H:i:s",strtotime($_POST['reporting_time'][$i]));
+               $handover_time=date("H:i:s",strtotime($_POST['handover_time'][$i])); 
+               $done_by=$_POST['done_by'][$i]; 
+               if($log_particular_id != "new"){
+                   //Update the existing the records.
+                   $sql="UPDATE shift_log_particulars SET equipment_affected='$equipment_affected', nature_job_defect='$nature_job_defect', reporting_time='$reporting_time', handover_time='$handover_time', emp_id='$done_by' WHERE log_particular_id='$log_particular_id' AND shift_log_id='{$shift_log_id}'";
+               }
+               else{
+                   $sql="INSERT INTO shift_log_particulars SET equipment_affected='$equipment_affected', nature_job_defect='$nature_job_defect', reporting_time='$reporting_time', handover_time='$handover_time', emp_id='$done_by', shift_log_id='{$shift_log_id}'";
+               }
+               $operation_success=$this->db->query($sql);
+               if($operation_success===TRUE){
+                   $return_data['page_message']="Employee Shift Log Particulars Updated Successfully !";
+                   $return_data['page_message_type']="alert alert-success";
+               }
+               else{
+                  $return_data['page_message']=$this->db->error; 
+                  $return_data['page_message_type']="alert alert-danger";
+                  break; // Come out of the loop.
+               }
+            }
+        endif;    
+        if(isset($_POST['end_shift_log_book'])){
+                $shift_log_id=$_POST['shift_log_id'];
+                $end_shift=$this->db->query("UPDATE shift_logs SET editable='0' WHERE shift_log_id='$shift_log_id'");
+                if($end_shift===TRUE){
+                    $return_data['page_message']="End Shift Confirmed Successfully !";
+                    $return_data['page_message_type']="alert alert-success";
+                }
+                else{
+                   $return_data['page_message']=$this->db->error;
+                   $return_data['page_message_type']="alert alert-danger";
+                }
+        }
+        return $return_data;
+    }
+
+    public function addNewShiftLogbook(){
+        $return_data=array();
+        if(isset($_POST['add_shift_logbook_sub'])){
+            $insert=array();
+           foreach($_POST as $key=>$val){
+               $insert[$key]=$val;
+           }
+           $sql="INSERT INTO shift_logs SET shift='{$insert['shift']}', emp_id='{$insert['emp_id']}', log_date='{$insert['shift_date']}',editable='1'";
+           $added=$this->db->query($sql);
+           if($added===TRUE){
+                $return_data['page_message']="New Shift Logbook Created Successfully, You can now particulars of the log book !";
+                $return_data['page_message_type']="alert alert-success";
+           }
+           else{
+                $return_data['page_message']=$this->db->error;
+                $return_data['page_message_type']="alert alert-danger";
+           }
+        }
+        return $return_data;
+    }
 
 
 

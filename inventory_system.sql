@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1:3306
--- Generation Time: Aug 01, 2020 at 12:57 PM
+-- Generation Time: Oct 11, 2020 at 06:08 PM
 -- Server version: 10.4.10-MariaDB
 -- PHP Version: 7.3.12
 
@@ -21,6 +21,33 @@ SET time_zone = "+00:00";
 --
 -- Database: `inventory_system`
 --
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `employees`
+--
+
+DROP TABLE IF EXISTS `employees`;
+CREATE TABLE IF NOT EXISTS `employees` (
+  `emp_id` int(200) NOT NULL AUTO_INCREMENT,
+  `emp_name` varchar(200) NOT NULL,
+  `emp_designation` varchar(200) NOT NULL,
+  `emp_dop` date NOT NULL,
+  `emp_dob` date NOT NULL,
+  `emp_blood_grp` varchar(200) NOT NULL,
+  `emp_phone` varchar(200) NOT NULL,
+  `emp_mail` varchar(200) NOT NULL,
+  PRIMARY KEY (`emp_id`)
+) ENGINE=MyISAM AUTO_INCREMENT=6 DEFAULT CHARSET=latin1;
+
+--
+-- Dumping data for table `employees`
+--
+
+INSERT INTO `employees` (`emp_id`, `emp_name`, `emp_designation`, `emp_dop`, `emp_dob`, `emp_blood_grp`, `emp_phone`, `emp_mail`) VALUES
+(4, 'Rajesh Sahu', 'General Manager', '2020-10-15', '2020-10-28', '0+', '986155132', 'rajesh.sahu@gmail.com'),
+(5, 'Chinmaya Das', 'General Manager', '2020-10-05', '2020-10-20', '0+', '8792394035', 'chinmaya.das@gmail.com');
 
 -- --------------------------------------------------------
 
@@ -100,6 +127,57 @@ CREATE TABLE IF NOT EXISTS `locations` (
 INSERT INTO `locations` (`location_id`, `location_name`, `updated_on`, `created_on`) VALUES
 (1, 'Rourkela', '2020-07-31 00:00:00', '2020-07-31 00:00:00'),
 (2, 'Bhillai', '2020-07-12 18:25:07', '2020-07-12 18:18:29');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `shift_logs`
+--
+
+DROP TABLE IF EXISTS `shift_logs`;
+CREATE TABLE IF NOT EXISTS `shift_logs` (
+  `shift_log_id` int(200) NOT NULL AUTO_INCREMENT,
+  `log_date` date NOT NULL,
+  `emp_id` int(200) NOT NULL,
+  `shift` varchar(200) NOT NULL,
+  `editable` int(200) NOT NULL,
+  PRIMARY KEY (`shift_log_id`)
+) ENGINE=MyISAM AUTO_INCREMENT=3 DEFAULT CHARSET=latin1;
+
+--
+-- Dumping data for table `shift_logs`
+--
+
+INSERT INTO `shift_logs` (`shift_log_id`, `log_date`, `emp_id`, `shift`, `editable`) VALUES
+(1, '2020-10-11', 4, 'A', 1),
+(2, '2020-10-14', 5, 'A', 1);
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `shift_log_particulars`
+--
+
+DROP TABLE IF EXISTS `shift_log_particulars`;
+CREATE TABLE IF NOT EXISTS `shift_log_particulars` (
+  `log_particular_id` int(200) NOT NULL AUTO_INCREMENT,
+  `equipment_affected` varchar(200) NOT NULL,
+  `nature_job_defect` varchar(2000) NOT NULL,
+  `reporting_time` time NOT NULL,
+  `handover_time` time NOT NULL,
+  `emp_id` int(200) NOT NULL,
+  `shift_log_id` int(11) NOT NULL,
+  PRIMARY KEY (`log_particular_id`)
+) ENGINE=MyISAM AUTO_INCREMENT=4 DEFAULT CHARSET=latin1;
+
+--
+-- Dumping data for table `shift_log_particulars`
+--
+
+INSERT INTO `shift_log_particulars` (`log_particular_id`, `equipment_affected`, `nature_job_defect`, `reporting_time`, `handover_time`, `emp_id`, `shift_log_id`) VALUES
+(1, 'Severe Damage to the turbine magnets.', 'Repair Done', '18:25:00', '06:19:00', 5, 1),
+(2, 'Computer accessories not working.', 'Repair Done', '18:25:00', '18:25:00', 4, 1),
+(3, 'Capacitor not working', 'Replacement Required', '18:25:00', '18:25:00', 5, 2);
 
 -- --------------------------------------------------------
 
